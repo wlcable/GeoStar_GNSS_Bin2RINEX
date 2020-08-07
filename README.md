@@ -37,9 +37,9 @@
 * Eventually, I would like to make a utility that could take the raw binary stream from the GNSS connected via Serial and make RINEX files in real-time.
 
 
-	William Cable
-	Bill.Cable@awi.de
-	Permafrost Research
-	Alfred Wegener Institute Helmholtz Centre for Polar and Marine Research
-	Telegrafenberg A45
-	14473 Potsdam
+William Cable\
+Bill.Cable@awi.de\
+Permafrost Research\
+Alfred Wegener Institute Helmholtz Centre for Polar and Marine Research\
+Telegrafenberg A45\
+14473 Potsdam\
