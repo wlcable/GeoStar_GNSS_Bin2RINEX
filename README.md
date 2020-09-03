@@ -10,12 +10,13 @@
  All of the functions that deal with reading and converting the binary messages can be found in GeoStar.cpp. The GeoS2RINEX.cpp simply creates a command-line interface for the utility.
  The Makefile is currently not properly written, maybe someone would like to fix this. I have been simply running *make -B GeoS2RINEX* in the src folder.
  
- In addition to creating the RINEX observation and navigation I have added a feature to output data in a format to be used for GPS-IR. 
+ ## GPS-IR
+ In addition to creating the RINEX observation and navigation files I have added a feature to output data in a format to be used for GPS-IR. The format now follows that of the [gnssSNR](http://github.com/kristinemlarson/gnssSNR) utility written by @kristinemlarson. However, I truncated the last 4 columns because in this case they were always 0 and just wasting space.
  
 ## Command-line Options
 	GeoS2RINEX path/input_file [options]
 	Options:
-			-StationID XXXX, default=XXXX, limit 4 characters
+			-StationID XXXX, default=XXXX00ZZZ, ZZZ=country code, limit 9 characters
 			-SVlog, enable generation of a csv file with Satellite Vehicle Info (CNR, El, Az)
 			-Outpath /path/path/, default is same as input
 			-CreationAgency XXXX, Name of Agency that creates this file (20)
@@ -24,9 +25,13 @@
 			-MarkerType XXXX, default=NON_GEODETIC, Name of the Marker (20)
 			-NameObserver XXXX, Name of the Observer (21)
 			-NameAgency XXXX, Name of the Agency (41)
-				
+
+## Updates
+* Changed the filename format to be more in-line with RINEX 3 guidelines. 
+* GPS-IR (SNR) output is more standard 
+
 ## Known Problems
-* Time in the messages is given as seconds since 01/01/2008 00:00:00 (GeoStar Base Time) or 06/01/1980 (GPS Base Time), to do this conversion I simply make a Base Time, *BTGeo* and *BTGPS* that can be added to the time in the messages. When I compile this on my Raspberry Pi this works fine; however, when I compile it on my PC the times are all 1 hour behind. To fix this I have just changed *BTGeo.tm_hour* and *BTGPS.tm_hour* to 1 but there is surely a more elegant way to handle this. I am not sure what is causing this problem but possibly it has to do with differences between the compilers, 32 vs 64-bit?
+* FIXED! ~~Time in the messages is given as seconds since 01/01/2008 00:00:00 (GeoStar Base Time) or 06/01/1980 (GPS Base Time), to do this conversion I simply make a Base Time, *BTGeo* and *BTGPS* that can be added to the time in the messages. When I compile this on my Raspberry Pi this works fine; however, when I compile it on my PC the times are all 1 hour behind. To fix this I have just changed *BTGeo.tm_hour* and *BTGPS.tm_hour* to 1 but there is surely a more elegant way to handle this. I am not sure what is causing this problem but possibly it has to do with differences between the compilers, 32 vs 64-bit?~~ Using setenv("TZ","UTC",true); was the solution
 * The code is currently not dealing with fractions of a second as time_t doesn't give this possibly. This isn't a problem if your data is 1Hz but if you are collecting at faster rates then the seconds will be truncated.
 * Only GPS and GLONASS related messages are fully implemented. Messages from other constellations with likely not be correctly converted or ignored completely.
 

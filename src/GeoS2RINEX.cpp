@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
         cout << "Usage:\n";
         cout << "\tGeoS2RINEX path/input_file [options]\n";
         cout << "\tOptions:\n";
-        cout << "\t\t-StationID XXXX, default=XXXX, limit 4 characters\n";
+        cout << "\t\t-StationID XXXX, default=XXXX00ZZZ, ZZZ=country code, limit 9 characters\n";
         cout << "\t\t-SVlog, enable generation of a csv file with Satellite Vehicle Info (CNR, El, Az)\n";
         cout << "\t\t-Outpath /path/path/, default is same as input\n";
         cout << "\t\t-CreationAgency XXXX, Name of Agency that creates this file (20)\n";
@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
             if ((strcmp(argv[c], "-StationID") == 0) & (argc > c))
             {
                 memcpy(&StationID, argv[c + 1], strlen(argv[c+1])+1);
-                StationID[4] = '\0'; //null terminated
+                StationID[10] = '\0'; //null terminated
                 c++;              //to skip the station name
                 continue;
             }

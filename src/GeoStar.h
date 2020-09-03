@@ -548,7 +548,7 @@ time_t BaseTimeGPS; // 01/06/1980 GPS Base Time
 char StCreateFileTime[22]; //string, file creation date/time, first measurement
 //double RegTimeGPS = 29226;  // 01/06/1980, days since 1900
 u_int32_t preamble[] = {0x534F4547, 0x53503372}; //"GEOS", "r3PS"
-char StationID[5] = "XXXX";                      //Station ID, max 4 char
+char StationID[10] = "XXXX00ZZZ";                //Station ID, max 9 char
 float verRINEX = 3.02;                           //RINEX version
 char obsType = 'M';                              //Observation Type, G:GPS, R:GLONASS, E:Galileo, M:Mixed, etc.
 char CreationAgency[21] = "Creation Agency";     //Name of agency creating current file
@@ -691,8 +691,10 @@ struct TEphGPS ArTEphGAL[GALprn + 1]; //*?*/ /*1..36*/
 struct TEphGPS ArTEphGPS_od[GPSprn + 1]; // array of received ephemeris without date /*?*/ /*1..32*/
 struct TEphGLN ArTEphGLN_od[GLNprn + 1]; // array of received ephemeris without date /*?*/ /*1..24*/
 
-struct tm FTime;   // time of the first measurement in the form of a system
+struct tm FTime, DSec;   // time of the first measurement in the form of a system
 time_t FdtUTC = 0; // time of the first measurement from the first message 0x10
+time_t DaySec;  // Begining of the current Day in Seconds
+time_t Last22 = 0;  // Time of the last pc22 message
 
 bool ChDT = false;      // flag for highlighting the date and time from the navigation message
 bool RecEph_od = false; // flag to record the entire array of ephemeris without date

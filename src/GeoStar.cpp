@@ -39,13 +39,14 @@ namespace GeoStar
   void Init()
   {
     int ik;
+    setenv("TZ","UTC",true); //This fixes the 1 hour offset I was having on my Windows system!
 
     // initialization of variables
     // 01/01/2008 GeoStar Base Time
     BTGeo.tm_year = 2008 - 1900;
     BTGeo.tm_mon = 0;
     BTGeo.tm_mday = 1;
-    BTGeo.tm_hour = 1; //On RaspPi this needs to be 0, on Windows 1, not sure why
+    BTGeo.tm_hour = 0; 
     BTGeo.tm_min = 0;
     BTGeo.tm_sec = 0;
     BTGeo.tm_gmtoff = 0;
@@ -56,11 +57,11 @@ namespace GeoStar
     BTGPS.tm_year = 1980 - 1900;
     BTGPS.tm_mon = 0;
     BTGPS.tm_mday = 6;
-    BTGPS.tm_hour = 1; //On RaspPi this needs to be 0, on Windows 1, not sure why
+    BTGPS.tm_hour = 0; 
     BTGPS.tm_min = 0;
     BTGPS.tm_sec = 0;
-    // BTGPS.tm_gmtoff = 0;
-    // BTGPS.tm_isdst = false;
+    BTGPS.tm_gmtoff = 0;
+    BTGPS.tm_isdst = 0;
     BaseTimeGPS = mktime(&BTGPS);
 
     for (ik = 0; ik < GLNprn + 1; ++ik)
@@ -128,27 +129,27 @@ namespace GeoStar
     strftime(StCreateFileTime, 22, "%Y%m%d %H%M%S GPS", &FTime);
 
     // creating rinex files for Obs. and Nav.
-    sprintf(buff, "%s%s%03u%c.%02u%c",
-            outpath, StationID, FTime.tm_yday + 1, alphabet[FTime.tm_hour], year, 'o');
+    sprintf(buff, "%s%s_R_%04u%03u%02u%02u_%cO.rnx",
+            outpath, StationID, FTime.tm_year+1900, FTime.tm_yday + 1, FTime.tm_hour, FTime.tm_min, obsType);
     F_RinMO.open(buff, ios::out | ios::trunc);
-    sprintf(buff, "%s%s%03u%c.%02u%c",
-            outpath, StationID, FTime.tm_yday + 1, alphabet[FTime.tm_hour], year, 'n');
+    sprintf(buff, "%s%s_R_%04u%03u%02u%02u_%cN.rnx",
+            outpath, StationID, FTime.tm_year+1900, FTime.tm_yday + 1, FTime.tm_hour, FTime.tm_min, obsType);
     F_RinMN.open(buff, ios::out | ios::trunc);
 
     //Prep a file of the In View / Active SVs
     if (SVinfoLOGGING)
     {
-      sprintf(buff, "%s%s%03u%c.%02u%c",
-              outpath, StationID, FTime.tm_yday + 1, alphabet[FTime.tm_hour], year, 's');
+      sprintf(buff, "%s%s_%04u%03u%02u%02u.snr",
+            outpath, StationID, FTime.tm_year+1900, FTime.tm_yday + 1, FTime.tm_hour, FTime.tm_min);
       F_SVinfo.open(buff, ios::out | ios::trunc);
       //F_SVinfo << "GNSS In View / Active Satellite Vehicles\n";
-      sprintf(buff, "TIME OF FIRST OBS: %4u-%02u-%02u %02u:%02u:%02.4f%4s\n",
-              (FTime.tm_year + 1900), FTime.tm_mon + 1, FTime.tm_mday, FTime.tm_hour, FTime.tm_min, (float)FTime.tm_sec,
-              "GPS");
-      F_SVinfo << buff;
-      sprintf(buff, "%s,%s,%s,%s,%s\n",
-              "seconds", "SVN", "Azimuth[deg]", "ElevationAngle[deg]", "CNR[dBHz]");
-      F_SVinfo << buff;
+      // sprintf(buff, "TIME OF FIRST OBS: %4u-%02u-%02u %02u:%02u:%02.4f%4s\n",
+      //         (FTime.tm_year + 1900), FTime.tm_mon + 1, FTime.tm_mday, FTime.tm_hour, FTime.tm_min, (float)FTime.tm_sec,
+      //         "GPS");
+      // F_SVinfo << buff;
+      // sprintf(buff, "%s,%s,%s,%s,%s\n",
+      //         "seconds", "SVN", "Azimuth[deg]", "ElevationAngle[deg]", "CNR[dBHz]");
+      // F_SVinfo << buff;
     }
 
     //Get System time UTC and format string
@@ -1031,10 +1032,12 @@ namespace GeoStar
   bool ExCm22()
   {
     uint16_t ik;
-    double tel;
-    double taz;
-    int32_t num;
-    double dft;
+    double tel; //elevation in deg.
+    double taz; //azmuth in deg.
+    uint8_t num;
+    uint16_t num2; //SV num according to K. Larson format
+    double Dsec;   //seconds into the current day
+    double edot;   //rate of change in elevation deg/sec
 
     CSpass = true;
 
@@ -1078,20 +1081,66 @@ namespace GeoStar
           (taz > 0) && (taz < 360) && (pc22.vs[ik].CNR > 0.1) &&
           (pc22.vs[ik].ss != 0))
       {
-        el[num] = tel;
+        //calculate the rate of change in elevation, deg/sec
+        edot = (el[num] - tel) / (difftime(Last22, TimeUTC));
+
+        el[num] = tel; //save el value
 
         //output SV info to file
+        //changing the format here to match that of M. Larson
+        // https://github.com/kristinemlarson/gnssSNR
+        /* 
+        1 Satellite number (see **)
+        2 Elevation angle, degrees
+        3 Azimuth angle, degrees
+        4 Seconds of the day, GPS time
+        5 elevation angle rate of change, degrees/sec.
+        6  S6
+        7  S1
+        8  S2
+        9  S5
+        10 S7
+        11 S8
+
+        *columns 8-11 were truncated to save space because they are always 0 
+
+        Units of the SNR observables are the same as the native RINEX file
+
+        **
+        Satellites are named as follows:
+        GPS 1-99
+        Glonass 101-199
+        Galileo 201-299
+        Beidou 301-399
+ */
         if (F_SVinfo.is_open() && ChDT)
         {
-          dft = difftime((TimeUTC + 1), FdtUTC); //time in seconds since first measurement
-          sprintf(buff, "%.*f,%u,%.4f,%.4f,%.4f\n",
-                  0, dft, num, taz, tel, pc22.vs[ik].CNR);
-          // sprintf(buff, "%8.0f,%3u,%8.4f,%8.4f,%8.4f\n",
-          //         dft, num, taz, tel, pc22.vs[ik].CNR);
+          //translate the SV num
+          if (svGPS(&num))
+          { //GPS is the same
+            num2 = num;
+          }
+          else if (svGLN(&num))
+          { //GLONASS
+            num2 = num - 64 + 100;
+          }
+          else if (svGAL(&num))
+          { //GALILEO
+            num2 = num + 100;
+          }
+          else
+          { // everything else is skipped
+            continue;
+          }
+          Dsec = difftime(TimeUTC, DaySec); //seconds into the current day
+          //I have changed the format slightly to removed unused observables from the last columns, to make the files smaller
+          sprintf(buff, "%3u %10.4f %10.4f %10.1f %10.6f %1u %7.2f\n",
+                  num2, tel, taz, Dsec, edot, 0, pc22.vs[ik].CNR);
           F_SVinfo << buff;
         }
       }
-    } // end of cycle for all spacecraft
+    }                 // end of cycle for all spacecraft
+    Last22 = TimeUTC; //save the time of this message
 
     // wrong package
     // OknoTP.Lines.Add (&#39;Msg (22): error&#39;);
@@ -1167,6 +1216,11 @@ namespace GeoStar
             // GPS time
             FdtUTC = ((pc0F.dtUTC - 1) + LeapSec) + BaseTimeGeo; // convert GeoStar Time to System Time, not yet dealing with decimal seconds
             FTime = *gmtime(&FdtUTC);                            //DateTimeToSystemTime(dttm, FTime)
+            DSec = FTime;
+            DSec.tm_hour = 0; //zero out hours, min, sec, for base seconds of the day
+            DSec.tm_min = 0;
+            DSec.tm_sec = 0;
+            DaySec = mktime(&DSec);
             pr0x0F = true;
           }
         }
@@ -1444,6 +1498,11 @@ namespace GeoStar
             // GPS time
             FdtUTC = ((pc10.dtUTC - 1) + LeapSec) + BaseTimeGeo; // convert GeoStar Time to System Time, not yet dealing with decimal seconds
             FTime = *gmtime(&FdtUTC);                            //DateTimeToSystemTime(dttm, FTime);
+            DSec = FTime;
+            DSec.tm_hour = 0; //zero out hours, min, sec, for base seconds of the day
+            DSec.tm_min = 0;
+            DSec.tm_sec = 0;
+            DaySec = mktime(&DSec);
             pr0x10 = true;
           }
         }
