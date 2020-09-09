@@ -20,9 +20,9 @@ int main(int argc, char *argv[])
         cout << "Usage:\n";
         cout << "\tGeoS2RINEX path/input_file [options]\n";
         cout << "\tOptions:\n";
-        cout << "\t\t-StationID XXXX, default=XXXX00ZZZ, ZZZ=country code, limit 9 characters\n";
+        cout << "\t\t-StationID XXXX, default=XXXX00ZZZ, ZZZ=country code, limit 9 characters, will be truncated to 4 char for snr\n";
         cout << "\t\t-SVlog, enable generation of a csv file with Satellite Vehicle Info (CNR, El, Az)\n";
-        cout << "\t\t-Outpath /path/path/, default is same as input\n";
+        cout << "\t\t-Outpath /path/path/, default is same as input, must already exist\n";
         cout << "\t\t-CreationAgency XXXX, Name of Agency that creates this file (20)\n";
         cout << "\t\t-MarkerName XXXX, Name of the Marker (60)\n";
         cout << "\t\t-MarkerNumber XXXX, Number of the Marker (20)\n";

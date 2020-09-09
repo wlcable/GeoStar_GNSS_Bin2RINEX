@@ -139,8 +139,8 @@ namespace GeoStar
     //Prep a file of the In View / Active SVs
     if (SVinfoLOGGING)
     {
-      sprintf(buff, "%s%s_%04u%03u%02u%02u.snr",
-            outpath, StationID, FTime.tm_year+1900, FTime.tm_yday + 1, FTime.tm_hour, FTime.tm_min);
+      sprintf(buff, "%s%.4s%03u0.%02u.snr%02u",
+            outpath, StationID, FTime.tm_yday + 1, FTime.tm_year+1900-2000, 88);
       F_SVinfo.open(buff, ios::out | ios::trunc);
       //F_SVinfo << "GNSS In View / Active Satellite Vehicles\n";
       // sprintf(buff, "TIME OF FIRST OBS: %4u-%02u-%02u %02u:%02u:%02.4f%4s\n",

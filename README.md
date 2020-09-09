@@ -11,14 +11,14 @@
  The Makefile is currently not properly written, maybe someone would like to fix this. I have been simply running *make -B GeoS2RINEX* in the src folder.
  
  ## GPS-IR
- In addition to creating the RINEX observation and navigation files I have added a feature to output data in a format to be used for GPS-IR. The format now follows that of the [gnssSNR](http://github.com/kristinemlarson/gnssSNR) utility written by @kristinemlarson. However, I truncated the last 4 columns because in this case they were always 0 and just wasting space.
+ In addition to creating the RINEX observation and navigation files I have added a feature to output data in a format to be used for GPS-IR. The format now follows that of the [gnssSNR](http://github.com/kristinemlarson/gnssSNR) utility written by @kristinemlarson. However, I have truncated the last 4 columns because in this case they were always 0 and just wasting space.
  
 ## Command-line Options
 	GeoS2RINEX path/input_file [options]
 	Options:
-			-StationID XXXX, default=XXXX00ZZZ, ZZZ=country code, limit 9 characters
+			-StationID XXXX, default=XXXX00ZZZ, ZZZ=country code, limit 9 characters, truncated to 4 for snr files
 			-SVlog, enable generation of a csv file with Satellite Vehicle Info (CNR, El, Az)
-			-Outpath /path/path/, default is same as input
+			-Outpath /path/path/, default is same as input, must already exist
 			-CreationAgency XXXX, Name of Agency that creates this file (20)
 			-MarkerName XXXX, Name of the Marker (60)
 			-MarkerNumber XXXX, Number of the Marker (20)
