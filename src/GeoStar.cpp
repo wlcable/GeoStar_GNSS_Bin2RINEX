@@ -179,8 +179,9 @@ namespace GeoStar
       sprintf(buff, "%4s %17.10E%16.9E%7i%5i %5s %2d %s\n", "GPUT", utc.a0, utc.a1, utc.tot,
               utc.wnt, "", 0, "TIME SYSTEM CORR");
       F_RinMN << buff;
-      sprintf(buff, "%6d%6d%6d%6d%35s LEAP SECONDS\n",
-              LeapSec, utc.dtlsf, utc.wnlsf, utc.dn, "");
+      //sprintf(buff, "%6d%6d%6d%6d%35s LEAP SECONDS\n",LeapSec, utc.dtlsf, utc.wnlsf, utc.dn, "");
+      sprintf(buff, "%6d%6s%6s%6s%35s LEAP SECONDS\n",
+              LeapSec,  "",  "",  "", "");
     }
     F_RinMN << buff;
     sprintf(buff, "%73s\n", "END OF HEADER");
@@ -227,13 +228,14 @@ namespace GeoStar
               << "# / OBS TYPES\n";
     F_RinMO << "DBHZ                                                        SIGNAL "
             << "STRENGTH UNIT\n";
-    sprintf(buff, "%6u    %02u    %02u    %02u    %02u    %02.7f%7s%26s\n", (FTime.tm_year + 1900), FTime.tm_mon + 1, FTime.tm_mday, FTime.tm_hour, FTime.tm_min, (float)FTime.tm_sec,
+    sprintf(buff, "%6u    %02u    %02u    %02u    %02u    %010.7f%7s%26s\n", (FTime.tm_year + 1900), FTime.tm_mon + 1, FTime.tm_mday, FTime.tm_hour, FTime.tm_min, (float)FTime.tm_sec,
             "GPS", "TIME OF FIRST OBS");
     F_RinMO << buff;
     if (pr0x1D)
     {
-      sprintf(buff, "%6d%6d%6d%6d%35s LEAP SECONDS\n",
-              LeapSec, utc.dtlsf, utc.wnlsf, utc.dn, "");
+      //sprintf(buff, "%6d%6d%6d%6d%35s LEAP SECONDS\n",LeapSec, utc.dtlsf, utc.wnlsf, utc.dn, "");
+      sprintf(buff, "%6d%6s%6s%6s%35s LEAP SECONDS\n",
+              LeapSec,  "",  "",  "", "");
       F_RinMO << buff;
     }
     sprintf(buff, "%73s\n", "END OF HEADER");
