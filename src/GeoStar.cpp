@@ -1283,14 +1283,14 @@ namespace GeoStar
     }
 
     // sign of highlighting date and time and spacecraft&gt; 0 in communication
-    if (((ChDT == false) || (pc0F.NMSat == 0)))
+    if (pc0F.NMSat == 0)
     {
       // skip era
       if (FLog.is_open())
       {
         sprintf(buff, " %04u-%02u-%02u %02u:%02u:%05.2f%s%i;\n",
                 TimeEposh.tm_year + 1900, TimeEposh.tm_mon + 1, TimeEposh.tm_mday, TimeEposh.tm_hour, TimeEposh.tm_min,
-                (float)TimeEposh.tm_sec, ": ERROR! ChDT=false or pc0F.NMSat = ", pc0F.NMSat);
+                (float)TimeEposh.tm_sec, ": ERROR! pc0F.NMSat = ", pc0F.NMSat);
         FLog << buff;
       }
       return true;
@@ -1566,15 +1566,15 @@ namespace GeoStar
       return true;
     }
 
-    // sign of highlighting date and time and spacecraft&gt; 0 in communication
-    if (((ChDT == false) || (pc10.NMSat == 0)))
+    // spacecraft&gt; 0 in communication
+    if (pc10.NMSat == 0)
     {
       // skip era
       if (FLog.is_open())
       {
         sprintf(buff, " %04u-%02u-%02u %02u:%02u:%05.2f%s%i;\n",
                 TimeEposh.tm_year + 1900, TimeEposh.tm_mon + 1, TimeEposh.tm_mday, TimeEposh.tm_hour, TimeEposh.tm_min,
-                (float)TimeEposh.tm_sec, ": Ox10 ERROR! ChDT=false or pc10.NMSat = ", pc10.NMSat);
+                (float)TimeEposh.tm_sec, ": Ox10 ERROR! pc10.NMSat = ", pc10.NMSat);
         FLog << buff;
       }
       return true;
